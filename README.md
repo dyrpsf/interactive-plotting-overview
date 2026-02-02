@@ -1,1 +1,82 @@
-# interactive-plotting-overview
+# Interactive Plotting Frameworks in Python for Web‑based Reporting
+
+## 1. Context and requirements
+
+This document gives a first overview of several interactive plotting frameworks in Python that could be used for automated reporting in the **sbmlsim** project.  
+The automated reporting workflow needs plotting tools that:
+
+- work well with **Python** and scientific/numerical data (time courses, parameter scans, sensitivity analyses),
+- can be embedded into **HTML‑based web reports** (e.g. Quarto, GitHub Pages),
+- optionally support **static export** (PNG/SVG/PDF) for inclusion in **Typst/PDF** reports,
+- are reasonably mature, documented, and maintained,
+- do not make CI/CD workflows overly complex (dependencies, build steps).
+
+Below is a high‑level comparison followed by short notes on each framework.
+
+## 2. High‑level comparison
+
+| Library              | Primary style              | Interactivity level                            | HTML / web embedding                                    | Static export for PDF reports                     | Quarto integration                              | Strengths                                                                 | Main limitations / trade‑offs                                                                 |
+|----------------------|---------------------------|------------------------------------------------|---------------------------------------------------------|---------------------------------------------------|--------------------------------------------------|---------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|
+| **Plotly**           | Imperative (Python API)   | Very high (zoom, pan, hover, legends, widgets) | Embeds as self‑contained HTML/JavaScript               | PNG/SVG/PDF via `kaleido` or `orca` (extra dep.)  | Good support; interactive figures work in Quarto | Rich interactive plots; large ecosystem; good time‑series support        | Heavier JavaScript payload; static export adds extra dependency; styling can be verbose       |
+| **Altair (Vega‑Lite)** | Declarative (“grammar of graphics”) | High (tooltips, selection, brushing, linked views) | Exports to Vega‑Lite JSON + JS; easy HTML embedding    | PNG/SVG/PDF via Vega‑Lite export tools            | Native support for Vega/Vega‑Lite in Quarto      | Concise syntax; good for statistical/relational data; powerful linked interaction | Large raw datasets can be an issue (JSON size); requires export tooling for static images     |
+| **Bokeh**            | Imperative / object model | High (pan/zoom, hover, linked plots, widgets)  | Generates HTML + JS; supports standalone pages or apps | Static PNG/SVG via extra tools (e.g. Selenium)    | Works in Quarto via embedded Bokeh components    | Flexible interactive plots; can power small dashboards or apps           | More complex stack for export; heavier setup for dashboards (Bokeh server)                    |
+| **HoloViews + Panel**| High‑level on top of Bokeh/Matplotlib/Plotly | High (dynamic maps, widgets, dashboards)        | Panel apps/pages can be served or embedded as HTML     | Uses backend capabilities (e.g. Matplotlib/Plotly)| Embedding possible; works well in notebooks      | Very productive for exploratory work and dashboards; integrates several backends | Additional abstraction layer to learn; may be more than needed for simple plots               |
+| **Matplotlib**       | Imperative, static‑oriented| Low–medium (basic interactivity via backends)  | Images embedded as PNG/SVG in HTML                     | Excellent static PNG/SVG/PDF output               | Quarto supports Matplotlib figures well          | Standard scientific plotting library; stable; excellent for publication‑quality static figs    | Limited browser‑side interactivity; interactive HTML usually needs extra tools (e.g. mpld3)   |
+
+## 3. Framework notes
+
+### 3.1 Plotly
+
+- **Usage style:** object‑oriented Python API; also has a “plotly express” high‑level API for quick figures.
+- **Interactivity:** rich built‑in interactivity (zoom, pan, hover tooltips, legends, animation, sliders, selection).
+- **Web embedding:** produces HTML + JavaScript that can be saved as a standalone HTML file or embedded into web pages.  
+  Works well in Jupyter notebooks and other notebook environments.
+- **Static export:** uses additional tools such as `kaleido` (recommended) to export to PNG/SVG/PDF. This extra dependency would need to be available in CI for automatic report builds.
+- **Quarto:** Quarto supports Plotly out of the box; interactive figures are preserved in rendered HTML documents.
+- **Suitability for sbmlsim:** good candidate for interactive **time‑course plots**, **parameter scans**, and **sensitivity analysis** visualizations in HTML reports. Also supports subplots and small multiples.
+
+### 3.2 Altair (Vega‑Lite)
+
+- **Usage style:** declarative; the user specifies *what* should be shown (encodings, marks, data) instead of step‑by‑step drawing commands.
+- **Interactivity:** uses Vega‑Lite’s interaction model: hover tooltips, selection, filtering, zooming, brushing, linked plots, etc.
+- **Web embedding:** renders to Vega‑Lite JSON plus a small JavaScript runtime; easy to embed into static HTML pages.
+- **Static export:** uses Vega/Vega‑Lite export tools to generate PNG/SVG/PDF. This typically requires a small helper tool installed (e.g. `vl-convert` or node‑based tooling) and would need to be configured for CI.
+- **Quarto:** Quarto has native support for Vega‑Lite, which makes Altair plots integrate nicely into Quarto HTML reports.
+- **Suitability for sbmlsim:** very good for **statistical summaries**, **distribution plots**, and **linked views** (e.g. exploring sensitivity analysis results across many parameters). The concise syntax may make templates easier to maintain.
+
+### 3.3 Bokeh
+
+- **Usage style:** Python object model; users construct figures, glyphs, and layouts using Python.
+- **Interactivity:** supports many interactive features (hover, zoom, pan, selection, linked panning/zooming) and interactive widgets.
+- **Web embedding:** can output standalone HTML files, script + div components that can be embedded in other pages, or full Bokeh server apps.
+- **Static export:** static PNG/SVG export is possible but usually requires a headless browser and Selenium; CI configuration may be more involved.
+- **Quarto:** Bokeh figures can be embedded into Quarto documents when rendered from Python code cells.
+- **Suitability for sbmlsim:** useful if the project later wants more *dashboard‑like* interfaces (e.g. interactive exploration of many simulation scenarios), but might be heavier than necessary for simple report figures.
+
+### 3.4 HoloViews + Panel
+
+- **Usage style:** HoloViews provides a high‑level interface where users describe data and visual mappings; the actual rendering backend can be Bokeh, Matplotlib, or Plotly.  
+  Panel is used to build interactive apps and dashboards from these components.
+- **Interactivity:** strong support for interactive widgets, sliders, and dynamic updating of plots as parameters change.
+- **Web embedding:** Panel apps can be served as standalone web applications or embedded into existing pages as components.
+- **Static export:** depends on the chosen backend (e.g. Matplotlib for high‑quality static figures, Plotly/Bokeh for interactive ones).
+- **Suitability for sbmlsim:** could be interesting for advanced dashboards (e.g. interactively changing parameters and seeing sbmlsim outputs), but it introduces another abstraction layer on top of the base plotting libraries.
+
+### 3.5 Matplotlib (baseline)
+
+- **Usage style:** imperative plotting library; standard in the scientific Python ecosystem.
+- **Interactivity:** mainly limited to interactive backends in desktop or notebook environments; browser‑side interactivity is not the main focus.
+- **Web embedding:** usually used by exporting PNG/SVG images which can be embedded into HTML or PDF.
+- **Static export:** very strong; widely used for publication‑quality figures in PNG/SVG/PDF formats.
+- **Suitability for sbmlsim:** excellent for **static figures** in PDF/Typst reports and for reproducible, publication‑ready plots. For fully interactive HTML reports, it would likely need to be complemented by another library.
+
+## 4. Initial thoughts for sbmlsim automated reporting
+
+- For **interactive HTML reports**, **Plotly** and **Altair** appear to be the most straightforward options due to their good Quarto integration and rich interactivity.
+- **Matplotlib** remains valuable for **high‑quality static figures** in PDF/Typst reports.
+- **Bokeh** (and higher‑level tools like **HoloViews + Panel**) become more attractive if there is a future goal of building **dashboards or small web apps** for exploring simulation results, beyond static reports.
+- A possible approach is to start with a small set of **standard plot types** (e.g. time‑course plots, parameter scan plots, sensitivity bar charts) in one main interactive library, and keep Matplotlib for static exports.
+
+---
+
+Author - Deepak Yadav

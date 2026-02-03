@@ -132,4 +132,26 @@ Based on typical workflows for sensitivity analysis (SA) and uncertainty quantif
 
 These plot types and library mappings can serve as a starting point when designing the automated reporting templates for sbmlsim.
 
+## 6. Simple prototype examples
+
+To get an initial feeling for interactive figures, this repository contains two small Plotly prototypes in the `examples/` folder:
+
+1. `timecourse_uncertainty_band.py`  
+   - Creates a time‑course plot with a shaded uncertainty band around a median curve.  
+   - Intended as a prototype for visualizing uncertainty bands from Monte Carlo simulations or other UQ methods.
+
+2. `sensitivity_bar_plot.py`  
+   - Creates a bar chart of example “total‑order sensitivity indices” for several parameters.  
+   - Intended as a prototype for visualizing global sensitivity analysis results (e.g. Sobol indices).
+
+### How to run the examples
+
+From the repository root:
+
+```bash
+python examples\timecourse_uncertainty_band.py
+python examples\sensitivity_bar_plot.py
+```
+Both scripts open an interactive Plotly figure in the default web browser.
+
 Author - Deepak Yadav

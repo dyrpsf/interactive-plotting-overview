@@ -78,5 +78,58 @@ Below is a high‑level comparison followed by short notes on each framework.
 - A possible approach is to start with a small set of **standard plot types** (e.g. time‑course plots, parameter scan plots, sensitivity bar charts) in one main interactive library, and keep Matplotlib for static exports.
 
 ---
+## 5. Plot types for sensitivity and uncertainty analysis
+
+Based on typical workflows for sensitivity analysis (SA) and uncertainty quantification (UQ), the automated reporting in sbmlsim will likely need at least the following plot types:
+
+1. **Time‑course plots with uncertainty bands**
+   - Show simulation output over time together with uncertainty (e.g. 5th–95th percentile).
+   - Often displayed as a mean or median curve with a shaded region around it.
+   - Important for visualizing the effect of parameter uncertainty on key observables.
+
+2. **Bar plots of sensitivity indices**
+   - One bar per parameter, with height equal to a sensitivity index (e.g. first‑order or total‑order Sobol index, eFAST index, Morris measure).
+   - Useful for ranking parameters by importance.
+   - Frequently used both for local and global sensitivity summaries.
+
+3. **Heatmaps / matrices of sensitivities**
+   - Parameters on one axis, outputs or time points on the other.
+   - Color encodes sensitivity strength.
+   - Highlights how parameter influence changes across outputs or time.
+
+4. **Scatter plots and correlation plots**
+   - Scatter plots of parameter values vs. outputs.
+   - Correlation‑based methods (e.g. PRCC, Spearman) can be visualized as:
+     - scatter plots with regression lines, or
+     - bar plots of correlation coefficients.
+   - Useful to inspect monotonic but nonlinear relationships.
+
+5. **Distribution plots for key outputs**
+   - Histograms, kernel density estimates, or violin/box plots of important outputs (e.g. maximum concentration, AUC).
+   - Derived from Monte Carlo simulations.
+   - Show overall uncertainty distribution, not just point estimates.
+
+### Mapping of plot types to candidate libraries
+
+- **Plotly**
+  - Time‑course with uncertainty bands: straightforward using multiple traces with `fill='tonexty'`.
+  - Sensitivity bar plots and correlation bar plots: basic bar/scatter plots with hover information.
+  - Heatmaps: built‑in heatmap support with good interactivity.
+  - Distribution plots: histograms, violin plots, box plots are available.
+
+- **Altair (Vega‑Lite)**
+  - Time‑course plots and uncertainty bands: can be expressed declaratively with layered charts.
+  - Sensitivity bar plots and heatmaps: well suited for tidy/tabular data, with good support for faceting and linked views.
+  - Distribution plots: histograms and density plots can be defined in a compact way.
+
+- **Bokeh / HoloViews + Panel**
+  - All plot types above are possible, with additional options for interactive widgets (e.g. sliders for selecting time windows or parameter subsets).
+  - Well suited if interactive dashboards for exploring SA/UQ results are desired.
+
+- **Matplotlib**
+  - Very good for static versions of these plots (especially time‑course with uncertainty bands and bar plots of sensitivities) to be used in PDF/Typst reports.
+  - Less suitable for fully interactive HTML plots by itself, but can serve as a baseline for publication‑quality static figures.
+
+These plot types and library mappings can serve as a starting point when designing the automated reporting templates for sbmlsim.
 
 Author - Deepak Yadav
